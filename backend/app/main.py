@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, projects, agents, prompts, chat
 
-app = FastAPI(title="Chatbot Platform MVP")
+from app.routers import auth, projects, agents, prompts, chat, files
 
+app = FastAPI(title="Chatbot Platform API")
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -17,12 +19,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Routers
 app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(agents.router)
 app.include_router(prompts.router)
 app.include_router(chat.router)
+app.include_router(files.router)
+
 
 @app.get("/health")
 def health():
