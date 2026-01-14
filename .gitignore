@@ -1,0 +1,88 @@
+# =========================
+# Global
+# =========================
+.DS_Store
+Thumbs.db
+*.log
+logs/
+*.tmp
+*.swp
+*.swo
+
+# =========================
+# Environment files (Secrets)
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Python / FastAPI Backend
+# =========================
+backend/.venv/
+backend/venv/
+backend/env/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+
+# Python build / packaging
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.coverage.*
+
+# mypy / type checking
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Alembic (keep migrations but ignore compiled artifacts)
+backend/alembic/*.pyc
+backend/alembic/__pycache__/
+
+# =========================
+# Node / Next.js Frontend
+# =========================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/.vercel/
+frontend/.cache/
+
+# npm / yarn / pnpm lock logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# IDEs / Editors
+# =========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# =========================
+# OS / Windows
+# =========================
+$RECYCLE.BIN/
+*.lnk
+
+# =========================
+# Local DB / backups
+# =========================
+*.sqlite
+*.db
+*.dump
+*.sql
