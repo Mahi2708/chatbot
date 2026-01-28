@@ -58,8 +58,8 @@ This design improves scalability, maintainability, and developer productivity.
 ```bash
 ┌──────────────┐        HTTP / JSON        ┌──────────────┐
 │  Frontend    │  ─────────────────────▶  │   Backend    │
-│  (Next.js)   │                          │  (FastAPI)   │
-└──────────────┘                          └──────────────┘
+│  (Next.js)   │                           │  (FastAPI)   │
+└──────────────┘                           └──────────────┘
                                                  │
                                                  │ SQLAlchemy ORM
                                                  ▼
@@ -122,7 +122,7 @@ Notes
 Generate a secure JWT secret:
 ```bash
 
-cp .env.example .env
+python -c "import secrets; print(secrets.token_hex(32))"
 
 
 ```
