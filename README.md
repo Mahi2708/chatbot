@@ -1,212 +1,235 @@
-# Chatbot Platform MVP
+🤖 Chatbot Platform
 
-A minimal multi-tenant Chatbot Platform that supports authentication, project/agent creation, prompt management, and a chat interface connected to an LLM provider (OpenAI Responses API).
+A full-stack Chatbot Platform that allows users to create projects, configure AI agents, and interact with them through a modern ChatGPT-style interface.
+The platform supports authentication, project-based organization, agent configuration, and real-time AI chat using OpenAI models.
 
----
+✨ Key Features
 
-## About the Project
+User authentication (Register / Login)
 
-This project is a minimal version of a chatbot platform with:
-- User Registration & Login (JWT Authentication)
-- Projects under each user
-- Agents inside projects
-- Prompts stored per agent
-- Chat UI to interact with an agent
-- Conversations and messages stored in PostgreSQL
+Project-based organization
 
----
+Multiple AI agents per project
 
-## Project Structure
+ChatGPT-style dashboard with sidebar
 
-chatbot-platform/
-backend/ # FastAPI backend
-app/
-core/ # config, security, dependencies
-db/ # db session/base
-models/ # SQLAlchemy models
-routers/ # API routes (auth/projects/agents/prompts/chat)
-schemas/ # request/response validation
-services/ # LLM integration (OpenAI)
-main.py # FastAPI app entry
-alembic/ # migrations
-requirements.txt
-.env.example
+Agent chat with message history
 
-frontend/ # Next.js frontend
-app/ # pages (register/login/dashboard/chat)
-lib/ # api helpers
-package.json
-.env.example
+Secure JWT-based authentication
 
-README.md
-.gitignore
+PostgreSQL database with migrations
 
-yaml
-Copy code
+Modern dark UI built using Tailwind CSS
 
----
+🧱 Tech Stack
+Frontend
 
-## Fork & Clone
+Next.js (App Router)
 
-### 1) Fork the repository
-1. Open the GitHub repository page
-2. Click **Fork**
-3. Select your GitHub account
+React
 
-### 2) Clone your fork
-```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
-Requirements
-Install the following on your system:
+TypeScript
 
-Backend Requirements
-Python 3.11 / 3.12 recommended
+Tailwind CSS
 
-PostgreSQL 14+
+Backend
 
-Frontend Requirements
-Node.js 18+
+FastAPI
 
-npm 9+
+SQLAlchemy
 
-Tools
+Alembic
+
+PostgreSQL
+
+JWT Authentication
+
+OpenAI API
+
+✅ Requirements
+System Requirements
+
+Node.js ≥ 18
+
+npm ≥ 9
+
+Python 3.11 / 3.12 (recommended)
+
+PostgreSQL ≥ 14
+
 Git
 
-Docker is NOT required if PostgreSQL is already installed locally.
+Docker is not required for running the project locally.
 
-Local Setup & Run (Proper Order)
-Step 1: Create PostgreSQL Database (One time)
-Make sure PostgreSQL is running.
+🏗️ Architecture & Design Overview
 
-Create the database:
+The Chatbot Platform follows a modular, layered architecture that cleanly separates concerns between the frontend, backend, and database. This design improves scalability, maintainability, and developer productivity.
 
-bash
-Copy code
+1️⃣ High-Level Architecture
+┌──────────────┐        HTTP / JSON        ┌──────────────┐
+│  Frontend    │  ─────────────────────▶  │   Backend    │
+│  (Next.js)   │                          │  (FastAPI)   │
+└──────────────┘                          └──────────────┘
+                                                 │
+                                                 │ SQLAlchemy ORM
+                                                 ▼
+                                         ┌────────────────┐
+                                         │  PostgreSQL DB │
+                                         └────────────────┘
+                                                 │
+                                                 │ API Calls
+                                                 ▼
+                                          ┌─────────────┐
+                                          │ OpenAI API  │
+                                          └─────────────┘
+🚀 Running the Project Locally
+1️⃣ Clone the Repository
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
+
+🗄️ Backend Setup (FastAPI)
+2️⃣ Create PostgreSQL Database (One-time)
+
+Ensure PostgreSQL is running locally.
+
 psql -U <POSTGRES_USER>
-sql
-Copy code
+
 CREATE DATABASE chatbot;
 \q
-Step 2: Run Backend Locally (FastAPI)
-2.1 Go to backend folder
-bash
-Copy code
-cd backend
-2.2 Create .env
-bash
-Copy code
-cp .env.example .env
-Update backend/.env with your values:
 
-env
-Copy code
-DATABASE_URL=postgresql+psycopg://<POSTGRES_USER>:<POSTGRES_PASSWORD>@localhost:5432/chatbot
-OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
-OPENAI_MODEL=gpt-4o-mini
+3️⃣ Configure Backend Environment Variables
+
+Navigate to backend directory:
+
+cd backend
+
+
+Copy the environment template:
+
+cp .env.example .env
+
+
+Edit backend/.env and provide actual values:
+
+DATABASE_URL=postgresql+psycopg://<DB_USER>:<DB_PASSWORD>@localhost:5432/chatbot
 JWT_SECRET=<YOUR_JWT_SECRET>
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-Note: If your password contains special characters (e.g. @, #, /, :), URL-encode them.
-Example: @ → %40
+OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
+OPENAI_MODEL=gpt-4o-mini
 
-2.3 Create virtual environment
-Windows PowerShell
-powershell
-Copy code
+Notes
+
+Generate a secure JWT secret:
+
+python -c "import secrets; print(secrets.token_hex(32))"
+
+
+If your database password contains special characters (@, :, /, etc.), URL-encode it
+Example:
+@ → %40
+
+4️⃣ Create Python Virtual Environment
+
+Windows (PowerShell)
+
 py -m venv .venv
 .venv\Scripts\activate
-macOS/Linux
-bash
-Copy code
+
+
+macOS / Linux
+
 python3 -m venv .venv
 source .venv/bin/activate
-2.4 Install dependencies
-bash
-Copy code
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-2.5 Run migrations
-bash
-Copy code
-python -m alembic upgrade head
-(First-time only if migrations are not created)
 
-bash
-Copy code
-python -m alembic init alembic
-python -m alembic revision --autogenerate -m "init"
+5️⃣ Install Backend Dependencies
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+6️⃣ Run Database Migrations
 python -m alembic upgrade head
-2.6 Start backend server
-bash
-Copy code
+
+7️⃣ Start Backend Server
 uvicorn app.main:app --reload --port 8000
-Backend will run at:
+
+
+Backend will be available at:
 
 http://127.0.0.1:8000
 
+
 Useful endpoints:
 
-Health: http://127.0.0.1:8000/health
+Health check: http://127.0.0.1:8000/health
 
-API Docs: http://127.0.0.1:8000/docs
+API documentation: http://127.0.0.1:8000/docs
 
-✅ Keep backend running and open a new terminal for frontend.
+✅ Keep the backend running and open a new terminal for the frontend.
 
-Step 3: Run Frontend Locally (Next.js)
-3.1 Go to frontend folder
-bash
-Copy code
+🌐 Frontend Setup (Next.js)
+8️⃣ Navigate to Frontend Directory
 cd ../frontend
-3.2 Install dependencies
-bash
-Copy code
+
+9️⃣ Install Frontend Dependencies
 npm install
-3.3 Create .env
-bash
-Copy code
+
+🔟 Configure Frontend Environment Variables
+
+Copy the environment template:
+
 cp .env.example .env
+
+
 Update frontend/.env:
 
-env
-Copy code
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
-3.4 Run frontend
+
+1️⃣1️⃣ Start Frontend Development Server
+
 Default port (3000):
 
-bash
-Copy code
 npm run dev
-If port 3000 is busy, run on 3001:
 
-bash
-Copy code
+
+If port 3000 is busy:
+
 npm run dev -- -p 3001
-Frontend will run at:
+
+
+Frontend will be available at:
 
 http://localhost:3000
 or
-
 http://localhost:3001
 
-Application Usage (Quick Flow)
-Open frontend in browser
+🧪 Application Usage Flow
+
+Open the frontend in a browser
 
 Register a new user
 
-Login
+Login with credentials
 
-Create Project
+Create a project
 
-Create Agent
+Create one or more agents
 
-Open Agent chat and send messages
+Open an agent chat
 
-Notes
-If you change .env files, restart the corresponding server.
+Start interacting with the AI
 
-Make sure backend CORS allows the frontend port (3000/3001) if needed.
+⚠️ Important Notes
 
-makefile
-Copy code
-::contentReference[oaicite:0]{index=0}
+Always copy .env.example → .env before running
+
+Restart servers after updating .env files
+
+Backend must be running before frontend
+
+Ensure PostgreSQL service is running locally
+
+Make sure CORS allows frontend ports (3000 / 3001)
+
+📄 License
+
+This project is intended for educational and development purposes.
