@@ -77,8 +77,8 @@ This design improves scalability, maintainability, and developer productivity.
 ```
 ---
 ## 🚀 Running the Project Locally
-###🗄️ Backend Setup (FastAPI)
-###2️⃣ Create PostgreSQL Database (One-time)
+## 🗄️ Backend Setup (FastAPI)
+## 2️⃣ Create PostgreSQL Database (One-time)
 
 Ensure PostgreSQL is running locally.
 ```bash
@@ -93,7 +93,7 @@ CREATE DATABASE chatbot;
 \q
 
 ```
-###3️⃣ Configure Backend Environment Variables
+## 3️⃣ Configure Backend Environment Variables
 
 Navigate to backend directory:
 ```bash
@@ -129,7 +129,7 @@ cp .env.example .env
 If your database password contains special characters (@, :, /, etc.), URL-encode it
 Example: @ → %40
 
-###4️⃣ Create Python Virtual Environment
+## 4️⃣ Create Python Virtual Environment
 
 Windows (PowerShell)
 
@@ -146,7 +146,7 @@ source .venv/bin/activate
 
 
 ```
-###5️⃣ Install Backend Dependencies
+## 5️⃣ Install Backend Dependencies
 
 ```bash
 
@@ -156,7 +156,7 @@ pip install -r requirements.txt
 
 
 ```
-###6️⃣ Run Database Migrations
+## 6️⃣ Run Database Migrations
 ```bash
 
 python -m alembic upgrade head
@@ -164,7 +164,7 @@ python -m alembic upgrade head
 
 
 ```
-###7️⃣ Start Backend Server
+## 7️⃣ Start Backend Server
 ```bash
 
 uvicorn app.main:app --reload --port 8000
@@ -183,23 +183,24 @@ Health check: http://127.0.0.1:8000/health
 API docs (Swagger): http://127.0.0.1:8000/docs
 
 ✅ Keep the backend running and open a new terminal for the frontend.
+
 ---
 
-##🌐 Frontend Setup (Next.js)
-##8️⃣ Navigate to Frontend Directory
+## 🌐 Frontend Setup (Next.js)
+## 8️⃣ Navigate to Frontend Directory
 ```bash
 
 cd ../frontend
 
 
 ```
-##9️⃣ Install Frontend Dependencies
+##  9️⃣ Install Frontend Dependencies
 ```bash
 
 npm install
 
 ```
-##🔟 Configure Frontend Environment Variables
+## 🔟 Configure Frontend Environment Variables
 
 Copy the environment template:
 ```bash
@@ -213,7 +214,7 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 
 
 ```
-##1️⃣1️⃣ Start Frontend Development Server
+## 1️⃣1️⃣ Start Frontend Development Server
 
 Default port (3000):
 ```bash
@@ -232,8 +233,9 @@ Frontend will be available at:
 http://localhost:3000
 
 http://localhost:3001
+
 ---
-##🧪 Application Usage Flow
+## 🧪 Application Usage Flow
 
 Open the frontend in a browser
 
@@ -248,9 +250,10 @@ Create one or more agents
 Open an agent chat
 
 Start interacting with the AI
+
 ---
 
-##⚠️ Important Notes
+## ⚠️ Important Notes
 
 Always copy .env.example → .env before running
 
@@ -261,9 +264,10 @@ Backend must be running before frontend
 Ensure PostgreSQL service is running locally
 
 Make sure CORS allows frontend ports (3000, 3001)
+
 ---
 
-##📄 License
+## 📄 License
 
 This project is intended for educational and development purposes.
 
