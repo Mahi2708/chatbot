@@ -1,3 +1,10 @@
+/**
+ * Dashboard UI
+ *
+ * Related issue: #1
+ * Issue: Dashboard UI & Interaction Regression After Hero Panel Update
+ */
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
