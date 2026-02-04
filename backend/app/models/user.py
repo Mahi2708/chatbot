@@ -2,6 +2,12 @@ import uuid
 from sqlalchemy import String, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+from sqlalchemy import Column, String, DateTime
+from datetime import datetime
+
+reset_token = Column(String, nullable=True)
+reset_token_expires = Column(DateTime, nullable=True)
+
 
 class User(Base):
     __tablename__ = "users"

@@ -97,14 +97,89 @@ function DashboardContent() {
     "You are a helpful assistant."
   );
   const [agentModelName, setAgentModelName] = useState("gpt-4o-mini");
+  const MODEL_OPTIONS = [
+  "gpt-4o-mini",
+  "gpt-4o",
+  "gpt-4.1",
+  "gpt-3.5-turbo",
+];
 
   const [err, setErr] = useState<string | null>(null);
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [loadingAgents, setLoadingAgents] = useState(false);
+  type Selection =
+  | { type: "project"; data: Project }
+  | { type: "agent"; data: Agent }
+  | null;
+
+const [selectedItem, setSelectedItem] = useState<Selection>(null);
+  const [editMode, setEditMode] = useState(false);
+  function ChatIcon({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+    </svg>
+    );
+    
+}
+
+function TrashIcon({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6v14h8V6" />
+      <path d="M10 6V4h4v2" />
+    </svg>
+  );
+  }
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+function EditIcon({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+
 
   function logout() {
     localStorage.removeItem("token");
     window.location.href = "/";
+ 
+
   }
 
   // ----------------------------
@@ -226,6 +301,7 @@ function DashboardContent() {
       setErr(e.message || "Failed to create agent");
     }
   }
+  
 
   // ----------------------------
   // Open Chat
@@ -233,6 +309,86 @@ function DashboardContent() {
   function openChat(agentId: string) {
     window.location.href = `/chat/${agentId}`;
   }
+  // ----------------------------
+// Save (Update Project / Agent)
+// ----------------------------
+async function saveSelectedItem() {
+  if (!selectedItem) return;
+
+  try {
+    if (selectedItem.type === "project") {
+      await apiFetch(`/projects/${selectedItem.data.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          name: selectedItem.data.name,
+          description: selectedItem.data.description,
+        }),
+      });
+
+      await loadProjects();
+    }
+
+    if (selectedItem.type === "agent") {
+      if (!activeProjectId) return;
+
+      await apiFetch(
+        `/projects/${activeProjectId}/agents/${selectedItem.data.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            name: selectedItem.data.name,
+            system_prompt: selectedItem.data.system_prompt,
+            model_name: selectedItem.data.model_name,
+          }),
+        }
+      );
+
+      await loadAgents(activeProjectId);
+    }
+
+    setEditMode(false);
+  } catch (e: any) {
+    alert(e.message || "Failed to save");
+  }
+}
+
+// ----------------------------
+// Delete (Project / Agent)
+// ----------------------------
+async function deleteSelectedItem() {
+  if (!selectedItem) return;
+
+  try {
+    if (selectedItem.type === "project") {
+      await apiFetch(`/projects/${selectedItem.data.id}`, {
+        method: "DELETE",
+      });
+
+      setSelectedItem(null);
+      await loadProjects();
+    }
+
+    if (selectedItem.type === "agent") {
+      if (!activeProjectId) return;
+
+      await apiFetch(
+        `/projects/${activeProjectId}/agents/${selectedItem.data.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      setSelectedItem(null);
+      await loadAgents(activeProjectId);
+    }
+
+    setShowDeleteConfirm(false);
+  } catch (e: any) {
+    alert(e.message || "Failed to delete");
+  }
+}
+
+
 
   return (
     <div className="min-h-screen flex bg-zinc-950 text-zinc-100">
@@ -296,7 +452,12 @@ function DashboardContent() {
                 active={activeProjectId === p.id}
                 title={p.name}
                 subtitle={p.description || ""}
-                onClick={() => setActiveProjectId(p.id)}
+                onClick={() => {
+                          setActiveProjectId(p.id);
+                          setSelectedItem({ type: "project", data: p });
+                          setEditMode(false);
+                        }}
+
               />
             ))}
           </div>
@@ -329,7 +490,11 @@ function DashboardContent() {
             {filteredAgents.map((a) => (
               <button
                 key={a.id}
-                onClick={() => openChat(a.id)}
+                onClick={() => {
+                          setSelectedItem({ type: "agent", data: a });
+                          setEditMode(false);
+                        }}
+
                 className="w-full text-left px-3 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800"
               >
                 <div className="text-sm font-medium truncate">{a.name}</div>
@@ -379,11 +544,249 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="max-w-5xl mx-auto px-6 py-10">
-          {/* keep your existing UI exactly as before... */}
-          {/* ... */}
+ {/* Main content */}
+<div className="max-w-6xl mx-auto px-6 py-12">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    {/* --- TOP ROW: 3 cards --- */}
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+      <div className="text-3xl mb-3">🗂</div>
+      <h3 className="text-lg font-semibold mb-1">Create a Project</h3>
+      <p className="text-sm text-zinc-400 mb-4">
+        Projects help you organize agents, prompts, and conversations.
+      </p>
+      <div className="text-xs text-zinc-500">
+        Use <span className="text-zinc-300">+ Project</span> in the sidebar.
+      </div>
+    </div>
+
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+      <div className="text-3xl mb-3">🤖</div>
+      <h3 className="text-lg font-semibold mb-1">Create an Agent</h3>
+      <p className="text-sm text-zinc-400 mb-4">
+        Agents define behavior, model, and and role.
+      </p>
+      <div className="text-xs text-zinc-500">
+        Select a project, then click{" "}
+        <span className="text-zinc-300">+ Agent</span>.
+      </div>
+    </div>
+
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+      <div className="text-3xl mb-3">💬</div>
+      <h3 className="text-lg font-semibold mb-1">Chat with an Agent</h3>
+      <p className="text-sm text-zinc-400 mb-4">
+        Start conversations and test responses.
+      </p>
+      <div className="text-xs text-zinc-500">
+        Click an agent in the sidebar.
+      </div>
+    </div>
+
+    {/* --- BOTTOM ROW: Live Preview (spans all 3 columns) --- */}
+{/* --- BOTTOM ROW: Hero Card (Live Preview / Details) --- */}
+<div className="md:col-span-3 mt-6">
+
+  {/* ========================= */}
+  {/* DEFAULT: Live Preview */}
+  {/* ========================= */}
+  {!selectedItem && (
+    <div className="relative">
+      <div className="absolute -inset-6 rounded-[32px] bg-white/5 blur-3xl" />
+
+      <div className="relative w-full h-[520px] rounded-[32px] border border-zinc-800 bg-zinc-900/60 backdrop-blur-xl p-8 flex flex-col">
+        <div className="text-sm text-zinc-400 mb-6">Live Preview</div>
+
+        <div className="flex-1 space-y-4">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-5 py-4">
+            <div className="text-xs text-zinc-400 mb-1">Agent</div>
+            <div className="text-sm text-zinc-200">
+              How can I help you today?
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-black px-5 py-4 ml-8">
+            <div className="text-xs text-zinc-400 mb-1">You</div>
+            <div className="text-sm text-white">
+              Create an onboarding checklist for my product.
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 px-5 py-4">
+            <div className="text-xs text-zinc-400 mb-1">Agent</div>
+            <div className="text-sm text-zinc-200">
+              Sure — here’s a structured onboarding checklist that helps new
+              users get value quickly while reducing churn…
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-black px-5 py-4 ml-8">
+            <div className="text-xs text-zinc-400 mb-1">You</div>
+            <div className="text-sm text-white">
+              Thank you for the checklist.
+            </div>
+          </div>
         </div>
+
+        <div className="pt-6 text-xs text-zinc-500">
+          Start building your projects and agents using the sidebar on the left.
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ========================= */}
+  {/* READ-ONLY DETAILS MODE */}
+  {/* ========================= */}
+  {selectedItem && !editMode && (
+    <div className="rounded-[32px] border border-zinc-800 bg-zinc-900/60 p-8">
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <div className="text-sm text-zinc-400">
+            {selectedItem.type === "project" ? "Project" : "Agent"}
+          </div>
+          <div className="text-xl font-semibold">
+            {selectedItem.data.name}
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          {selectedItem.type === "agent" && (
+            <button
+                onClick={() => openChat(selectedItem.data.id)}
+                className="p-2 rounded-lg border border-zinc-800 hover:bg-zinc-800"
+                title="Chat"
+              >
+                <ChatIcon className="text-zinc-200" />
+              </button>
+
+          )}
+
+         <button
+            onClick={() => setEditMode(true)}
+            className="p-2 rounded-lg border border-zinc-800 hover:bg-zinc-800"
+            title="Edit"
+          >
+            <EditIcon className="text-zinc-200" />
+          </button>
+
+        </div>
+      </div>
+
+      <div className="space-y-4 text-sm">
+        {selectedItem.type === "project" && (
+          <div className="text-zinc-400">
+            {selectedItem.data.description || "No description"}
+          </div>
+        )}
+
+        {selectedItem.type === "agent" && (
+          <>
+            <div>
+              <div className="text-xs text-zinc-500">Model</div>
+              {selectedItem.data.model_name}
+            </div>
+
+            <div>
+              <div className="text-xs text-zinc-500">System Prompt</div>
+              <div className="text-zinc-400">
+                {selectedItem.data.system_prompt}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )}
+{/* ========================= */}
+{/* EDIT MODE */}
+{/* ========================= */}
+{selectedItem && editMode && (
+  <div className="rounded-[32px] border border-zinc-800 bg-zinc-900/60 p-8 flex flex-col h-[520px]">
+    
+    {/* Header */}
+    <div className="flex items-center justify-between mb-8">
+      <div className="text-sm text-zinc-400">
+        Edit {selectedItem.type}
+      </div>
+
+      <button
+        onClick={() => setShowDeleteConfirm(true)}
+        className="p-2 rounded-lg border border-red-800 text-red-400 hover:bg-red-950"
+        title="Delete"
+      >
+        <TrashIcon />
+      </button>
+    </div>
+
+    {/* Form (grows to push buttons down) */}
+    <div className="flex-1 space-y-4">
+      <TextInput
+        value={selectedItem.data.name}
+        onChange={(e) =>
+          setSelectedItem({
+            ...selectedItem,
+            data: { ...selectedItem.data, name: e.target.value },
+          })
+        }
+      />
+
+      {selectedItem.type === "project" && (
+        <TextInput
+          value={selectedItem.data.description || ""}
+          onChange={(e) =>
+            setSelectedItem({
+              ...selectedItem,
+              data: {
+                ...selectedItem.data,
+                description: e.target.value,
+              },
+            })
+          }
+        />
+      )}
+
+      {selectedItem.type === "agent" && (
+        <textarea
+          className="w-full min-h-[120px] rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3"
+          value={selectedItem.data.system_prompt || ""}
+          onChange={(e) =>
+            setSelectedItem({
+              ...selectedItem,
+              data: {
+                ...selectedItem.data,
+                system_prompt: e.target.value,
+              },
+            })
+          }
+        />
+      )}
+    </div>
+
+    {/* Bottom actions (pinned) */}
+  <div className="pt-6 flex items-center justify-between border-t border-zinc-800">
+  {/* Cancel */}
+  <button
+    onClick={() => setEditMode(false)}
+    className="px-4 py-2.5 rounded-xl border border-zinc-800 text-sm"
+  >
+    Cancel
+  </button>
+
+  {/* Save */}
+  <button onClick={saveSelectedItem}
+    className="px-4 py-2.5 rounded-xl bg-white text-black text-sm font-medium hover:bg-zinc-200"
+  >
+    Save
+  </button>
+</div>
+  </div>
+)}
+
+</div>
+  </div>
+          </div>
+
       </main>
 
       {/* Your modals remain unchanged */}
@@ -444,11 +847,21 @@ function DashboardContent() {
             />
           </div>
 
-          <TextInput
-            placeholder="Model name (e.g. gpt-4o-mini)"
+                  <div className="space-y-1">
+          <div className="text-xs text-zinc-400">Model</div>
+          <select
             value={agentModelName}
             onChange={(e) => setAgentModelName(e.target.value)}
-          />
+            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3 outline-none focus:ring-2 focus:ring-white/10"
+          >
+            {MODEL_OPTIONS.map((model) => (
+              <option key={model} value={model}>
+                {model}
+              </option>
+            ))}
+          </select>
+        </div>
+
 
           <div className="pt-2 flex gap-2">
             <button
@@ -467,6 +880,38 @@ function DashboardContent() {
           </div>
         </div>
       </Modal>
+      <Modal
+  open={showDeleteConfirm}
+  title="Confirm deletion"
+  onClose={() => setShowDeleteConfirm(false)}
+>
+  <div className="space-y-4">
+    <p className="text-sm text-zinc-400">
+      This action cannot be undone. This will permanently delete this{" "}
+      <span className="text-zinc-200">
+        {selectedItem?.type}
+      </span>.
+    </p>
+
+    <div className="flex gap-2">
+      <button
+        onClick={() => setShowDeleteConfirm(false)}
+        className="flex-1 px-4 py-3 rounded-xl border border-zinc-800"
+      >
+        Cancel
+      </button>
+
+      <button
+  onClick={deleteSelectedItem}
+  className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700"
+>
+  Delete
+</button>
+
+    </div>
+  </div>
+</Modal>
+
     </div>
   );
 }

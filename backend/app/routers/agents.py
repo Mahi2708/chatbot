@@ -31,3 +31,60 @@ def list_agents(project_id: str, db: Session = Depends(get_db), user=Depends(get
     if not project or project.user_id != user.id:
         raise HTTPException(status_code=404, detail="Project not found")
     return db.query(Agent).filter(Agent.project_id == project_id).all()
+@router.put("/projects/{project_id}/agents/{agent_id}", response_model=AgentOut)
+def update_agent(
+    project_id: str,
+    agent_id: str,
+    payload: AgentCreate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    agent = (
+        db.query(Agent)
+        .join(Project)
+        .filter(
+            Agent.id == agent_id,
+            Agent.project_id == project_id,
+            Project.user_id == user.id,
+        )
+        .first()
+    )
+
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    agent.name = payload.name
+    agent.system_prompt = payload.system_prompt
+    agent.model_provider = payload.model_provider
+    agent.model_name = payload.model_name
+
+    db.commit()
+    db.refresh(agent)
+    return agent
+
+
+@router.delete("/projects/{project_id}/agents/{agent_id}")
+def delete_agent(
+    project_id: str,
+    agent_id: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    agent = (
+        db.query(Agent)
+        .join(Project)
+        .filter(
+            Agent.id == agent_id,
+            Agent.project_id == project_id,
+            Project.user_id == user.id,
+        )
+        .first()
+    )
+
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    db.delete(agent)
+    db.commit()
+    return {"ok": True}
+

@@ -21,13 +21,19 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await apiFetch("/auth/register", {
+      const res = await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({ name, email, password }),
       });
 
+      if (!res.ok) {
+        throw new Error("Registration failed");
+      }
+
       setOk("Account created successfully. Redirecting to login...");
-      setTimeout(() => (window.location.href = "/login"), 1200);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1200);
     } catch (e: any) {
       setErr(e.message || "Registration failed");
     } finally {
@@ -36,7 +42,10 @@ export default function Register() {
   }
 
   return (
-    <AuthShell title="Create your account" subtitle="Start building projects and AI agents">
+    <AuthShell
+      title="Create your account"
+      subtitle="Start building projects and AI agents"
+    >
       <div className="space-y-3">
         <TextInput
           placeholder="Full name"
@@ -66,12 +75,18 @@ export default function Register() {
 
         <p className="text-sm text-zinc-400">
           Already have an account?{" "}
-          <a className="text-white underline underline-offset-4" href="/login">
+          <a
+            className="text-white underline underline-offset-4"
+            href="/login"
+          >
             Login
           </a>
         </p>
 
-        <a className="text-xs text-zinc-500 hover:text-zinc-300 block" href="/">
+        <a
+          className="text-xs text-zinc-500 hover:text-zinc-300 block"
+          href="/"
+        >
           ← Back to Home
         </a>
       </div>

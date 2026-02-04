@@ -25,3 +25,17 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 
   return res;
 }
+export async function getMe() {
+  const res = await apiFetch("/me", { method: "GET" });
+  if (!res.ok) throw new Error("Failed to load user");
+  return res.json();
+}
+
+export async function updateMe(data: { name: string; email: string }) {
+  const res = await apiFetch("/me", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update user");
+  return res.json();
+}

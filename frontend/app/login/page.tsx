@@ -23,6 +23,10 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
+      if (!res.ok) {
+        throw new Error("Invalid credentials");
+      }
+
       const data = await res.json();
       localStorage.setItem("token", data.access_token);
       window.location.href = "/dashboard";
@@ -54,15 +58,30 @@ export default function Login() {
         <PrimaryButton onClick={submit} disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </PrimaryButton>
+        <p className="text-xs text-zinc-400 text-right">
+  <a
+    href="/forgot-password"
+    className="hover:text-white underline underline-offset-4"
+  >
+    Forgot password?
+  </a>
+</p>
+
 
         <p className="text-sm text-zinc-400">
           New here?{" "}
-          <a className="text-white underline underline-offset-4" href="/register">
+          <a
+            className="text-white underline underline-offset-4"
+            href="/register"
+          >
             Create an account
           </a>
         </p>
 
-        <a className="text-xs text-zinc-500 hover:text-zinc-300 block" href="/">
+        <a
+          className="text-xs text-zinc-500 hover:text-zinc-300 block"
+          href="/"
+        >
           ← Back to Home
         </a>
       </div>
